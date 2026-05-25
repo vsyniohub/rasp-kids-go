@@ -73,7 +73,21 @@ function formatAge(ticks) {
 
 // ─── main render ──────────────────────────────────────────────────────────────
 
-function render(pet, message) {
+// Pad-mode footer — button icons with PS colours
+// Visual: " ✕ Feed   ○ Play   □ Sleep   △ Clean  " = 38 chars
+function padFooter() {
+  const X = chalk.blueBright('✕');
+  const O = chalk.redBright('○');
+  const S = chalk.magentaBright('□');
+  const T = chalk.greenBright('△');
+
+  // Visual width: 2+1+8+1+8+1+8+1+8 = 38 ✓
+  const line1 = `  ${X} Feed   ${O} Play   ${S} Sleep  ${T} Clean  `;
+  const line2 = centered('≡ Options → Quit', chalk.gray); // plain text → correct length
+  return [line1, line2];
+}
+
+function render(pet, message, padMode = false) {
   const mood  = pet.mood;
   const art   = ART[mood];
   const color = MOOD_COLOR[mood] || chalk.white;
@@ -131,6 +145,14 @@ function render(pet, message) {
     const msg   = `  ${message}`;
     const trail = ' '.repeat(Math.max(0, W - msg.length));
     rows.push(border(chalk.cyanBright(msg) + trail));
+  }
+
+  // Pad-mode footer
+  if (padMode) {
+    rows.push(B(`╠${SEP}╣`));
+    const [line1, line2] = padFooter();
+    rows.push(border(line1));
+    rows.push(border(line2));
   }
 
   rows.push(B(`╚${SEP}╝`));

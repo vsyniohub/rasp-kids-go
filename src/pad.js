@@ -1,7 +1,7 @@
 const fs         = require('fs');
 const { execSync } = require('child_process');
 
-const PS_PATTERN = /playstation|dualshock|dualsense|sony.*controller/i;
+const PS_PATTERN = /playstation|dualshock|dualsense|sony.*controller|wireless controller/i;
 
 // ─── Linux (Raspberry Pi) ─────────────────────────────────────────────────────
 
