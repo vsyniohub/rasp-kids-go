@@ -124,8 +124,13 @@ async function main() {
     let pet = Pet.load();
 
     if (padSession) {
-      if (!pet) {
-        console.log(chalk.bold.cyanBright('\n  Welcome to Gochi!\n  Your digital friend is waiting...\n'));
+      if (!pet || !pet.isAlive) {
+        if (pet && !pet.isAlive) {
+          render(pet, `${pet.name} has passed away...`);
+          console.log('');
+        } else {
+          console.log(chalk.bold.cyanBright('\n  Welcome to Gochi!\n  Your digital friend is waiting...\n'));
+        }
         const name = await promptName();
         pet = new Pet(name);
         pet.save();

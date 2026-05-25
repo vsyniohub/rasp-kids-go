@@ -3,15 +3,17 @@ const HID = require('node-hid');
 const SONY_VENDOR_ID    = 0x054c;
 const DUALSENSE_PRODUCT = 0x0ce6;
 
-// Linux hidraw includes report ID at byte 0, shifting all offsets by 1
-const B = process.platform === 'linux' ? 1 : 0;
+// macOS: node-hid strips report ID → face buttons at byte 0, options at byte 10
+// Linux: hidraw keeps report ID + analog sticks prefix → face buttons at byte 8, options at byte 9
+const FACE = process.platform === 'linux' ? 8  : 0;
+const OPTS = process.platform === 'linux' ? 9  : 10;
 
 const BUTTON_MAP = {
-  square:   { byte: B,      mask: 0x10 },  // □
-  cross:    { byte: B,      mask: 0x20 },  // ✕
-  circle:   { byte: B,      mask: 0x40 },  // ○
-  triangle: { byte: B,      mask: 0x80 },  // △
-  options:  { byte: B + 10, mask: 0x20 },  // Options → quit
+  square:   { byte: FACE, mask: 0x10 },  // □
+  cross:    { byte: FACE, mask: 0x20 },  // ✕
+  circle:   { byte: FACE, mask: 0x40 },  // ○
+  triangle: { byte: FACE, mask: 0x80 },  // △
+  options:  { byte: OPTS, mask: 0x20 },  // Options → quit
 };
 
 const ACTION_MAP = {
