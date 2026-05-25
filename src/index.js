@@ -1,7 +1,8 @@
 const inquirer = require('inquirer');
 const chalk    = require('chalk');
 const Pet      = require('./pet');
-const { render } = require('./display');
+const { render }              = require('./display');
+const { detectPlayStationPad } = require('./pad');
 
 async function promptName() {
   const { name } = await inquirer.prompt([{
@@ -57,7 +58,30 @@ async function playGame(pet) {
   }
 }
 
+async function checkForPad() {
+  const pad = detectPlayStationPad();
+  if (!pad) return false;
+
+  console.log(chalk.greenBright(`\n  PlayStation pad detected: ${pad.name}`));
+  const { usePad } = await inquirer.prompt([{
+    type:    'confirm',
+    name:    'usePad',
+    message: chalk.yellowBright('Use it to control Gochi?'),
+    default: true,
+  }]);
+
+  return usePad;
+}
+
 async function main() {
+  const usePad = await checkForPad();
+
+  if (usePad) {
+    // TODO: pad control flow — to be implemented
+    console.log(chalk.cyanBright('\n  Pad support coming soon! Stay tuned...\n'));
+    return;
+  }
+
   while (true) {
     console.clear();
 
