@@ -1,7 +1,9 @@
 const inquirer = require('inquirer');
 const chalk    = require('chalk');
 const Pet      = require('./pet');
-const { render } = require('./display');
+const { render }              = require('./display');
+const { detectPlayStationPad } = require('./pad');
+const { PadSession }           = require('./pad-input');
 
 async function promptName() {
   const { name } = await inquirer.prompt([{
@@ -57,11 +59,80 @@ async function playGame(pet) {
   }
 }
 
+const PAD_ICON = {
+  feed:  chalk.blueBright('✕'),
+  play:  chalk.redBright('○'),
+  sleep: chalk.magentaBright('□'),
+  clean: chalk.greenBright('△'),
+};
+
+async function runPadGame(pet, pad) {
+
+  let message = pet.age === 0
+    ? `${pet.name} has just hatched! Welcome home!`
+    : `${pet.name} is happy to see you!`;
+
+  while (pet.isAlive) {
+    pet.tick();
+    render(pet, message, true);
+    message = '';
+
+    const action = await pad.waitForAction();
+
+    if (action === 'quit') {
+      pet.save();
+      pad.close();
+      console.clear();
+      console.log(chalk.cyanBright.bold(`\n  Goodbye! ${pet.name} will miss you!\n`));
+      return;
+    }
+
+    message = `${PAD_ICON[action]}  ${pet[action]()}`;
+    pet.save();
+  }
+
+  render(pet, `${pet.name} didn't make it...`, true);
+  await pad.waitForAction();
+  pad.close();
+}
+
+// Returns an open PadSession if user wants to use pad, null otherwise
+async function checkForPad() {
+  const pad = detectPlayStationPad();
+  if (!pad) return null;
+
+  console.log(chalk.greenBright(`\n  PlayStation pad detected: ${pad.name}`));
+  const { usePad } = await inquirer.prompt([{
+    type:    'confirm',
+    name:    'usePad',
+    message: chalk.yellowBright('Use it to control Gochi?'),
+    default: true,
+  }]);
+
+  if (!usePad) return null;
+
+  // Open device immediately — macOS GCF will claim it if we wait
+  return new PadSession();
+}
+
 async function main() {
+  const padSession = await checkForPad();
+
   while (true) {
     console.clear();
 
     let pet = Pet.load();
+
+    if (padSession) {
+      if (!pet) {
+        console.log(chalk.bold.cyanBright('\n  Welcome to Gochi!\n  Your digital friend is waiting...\n'));
+        const name = await promptName();
+        pet = new Pet(name);
+        pet.save();
+      }
+      await runPadGame(pet, padSession);
+      return;
+    }
 
     if (!pet) {
       console.log(chalk.bold.cyanBright('\n  Welcome to Gochi!\n  Your digital friend is waiting...\n'));
