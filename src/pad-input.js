@@ -3,13 +3,15 @@ const HID = require('node-hid');
 const SONY_VENDOR_ID    = 0x054c;
 const DUALSENSE_PRODUCT = 0x0ce6;
 
-// DualSense USB HID report byte offsets (data[0] = report ID 0x01)
+// Linux hidraw includes report ID at byte 0, shifting all offsets by 1
+const B = process.platform === 'linux' ? 1 : 0;
+
 const BUTTON_MAP = {
-  square:   { byte: 0, mask: 0x10 },  // □
-  cross:    { byte: 0, mask: 0x20 },  // ✕
-  circle:   { byte: 0, mask: 0x40 },  // ○
-  triangle: { byte: 0, mask: 0x80 },  // △
-  options:  { byte: 10, mask: 0x20 }, // Options → quit
+  square:   { byte: B,      mask: 0x10 },  // □
+  cross:    { byte: B,      mask: 0x20 },  // ✕
+  circle:   { byte: B,      mask: 0x40 },  // ○
+  triangle: { byte: B,      mask: 0x80 },  // △
+  options:  { byte: B + 10, mask: 0x20 },  // Options → quit
 };
 
 const ACTION_MAP = {
