@@ -8,10 +8,16 @@ A kids-friendly terminal pet. Feed it, play with it, put it to sleep — and don
 
 ## Setup & run
 
+Open a terminal, navigate to the project folder, then run:
+
 ```bash
+cd path/to/Goch
 npm install
 npm start
 ```
+
+On **macOS / Linux** you can open the terminal with `Ctrl+Alt+T` (Linux) or via Spotlight → Terminal (macOS).  
+On **Windows** use Command Prompt or PowerShell, then run the same commands above.
 
 ## How to play
 
