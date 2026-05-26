@@ -6,13 +6,24 @@ const SEP = '═'.repeat(W);
 
 // All art lines must be exactly 10 chars so centering is consistent
 const ART = {
-  happy:  ['  (\\_/)   ', ' ( ^w^ )  ', ' (>   <)  '],
-  normal: ['  (\\_/)   ', ' ( .w. )  ', ' (>   <)  '],
-  hungry: ['  (\\_/)   ', ' ( OwO )  ', ' (>   <)  '],
-  sleepy: ['  (\\_/)   ', ' (-w- )z  ', ' (>   <)  '],
-  sad:    ['  (\\_/)   ', ' ( ;w; )  ', ' (>   <)  '],
-  sick:   ['  (\\_/)   ', ' ( xwx )  ', ' (~   ~)  '],
-  dead:   ['  (\\_/)   ', ' ( x_x )  ', ' (     )  '],
+  happy:  ['  (\\_/)   ', ' (>   <)  '],
+  normal: ['  (\\_/)   ', ' (>   <)  '],
+  hungry: ['  (\\_/)   ', ' (>   <)  '],
+  sleepy: ['  (\\_/)   ', ' (>   <)  '],
+  sad:    ['  (\\_/)   ', ' (>   <)  '],
+  sick:   ['  (\\_/)   ', ' (~   ~)  '],
+  dead:   ['  (\\_/)   ', ' (     )  '],
+};
+
+// Animated face frames (frame index cycles through these)
+const FACES = {
+  happy:  [' ( ^w^ )  ', ' ( ^v^ )  '],
+  normal: [' ( .w. )  ', ' ( -w- )  '],
+  hungry: [' ( OwO )  ', ' ( owO )  '],
+  sleepy: [' (-w- )z  ', ' (-w- )   '],
+  sad:    [' ( ;w; )  ', ' ( ,w, )  '],
+  sick:   [' ( xwx )  '],
+  dead:   [' ( x_x )  '],
 };
 
 const MOOD_COLOR = {
@@ -73,9 +84,11 @@ function formatAge(ticks) {
 
 // ─── main render ──────────────────────────────────────────────────────────────
 
-function render(pet, message) {
+function render(pet, message, padMode = false, frame = 0) {
   const mood  = pet.mood;
   const art   = ART[mood];
+  const faces = FACES[mood];
+  const face  = faces[frame % faces.length];
   const color = MOOD_COLOR[mood] || chalk.white;
   const B     = chalk.yellowBright;
 
@@ -96,10 +109,10 @@ function render(pet, message) {
   rows.push(B(`╠${SEP}╣`));
   rows.push(blank());
 
-  // ASCII pet (each line is 10 chars → centered in W=38 → 14 pad each side)
-  for (const line of art) {
-    rows.push(border(centered(line, color)));
-  }
+  // ASCII pet: ears, animated face, body
+  rows.push(border(centered(art[0], color)));
+  rows.push(border(centered(face,   color)));
+  rows.push(border(centered(art[1], color)));
 
   rows.push(blank());
 
@@ -113,10 +126,10 @@ function render(pet, message) {
   //  1 (space) + 10 (label) + 1 (space) + 12 (bar) + 1 (space) + 4 (pct) + 9 (trail) = 38
   const TRAIL = ' '.repeat(W - 1 - 10 - 1 - 12 - 1 - 4);
   const stats = [
-    { label: 'Hunger    ', value: pet.hunger },
-    { label: 'Happiness ', value: pet.happiness },
-    { label: 'Energy    ', value: pet.energy },
-    { label: 'Health    ', value: pet.health },
+    { label: '♥ Hunger  ', value: pet.hunger },
+    { label: '★ Happy   ', value: pet.happiness },
+    { label: '~ Energy  ', value: pet.energy },
+    { label: '✚ Health  ', value: pet.health },
   ];
   for (const s of stats) {
     const pct = `${Math.round(s.value)}%`.padStart(4);
@@ -135,8 +148,8 @@ function render(pet, message) {
 
   rows.push(B(`╚${SEP}╝`));
 
-  console.clear();
-  console.log(rows.join('\n'));
+  process.stdout.write('\x1B[2J\x1B[3J\x1B[H');
+  process.stdout.write(rows.join('\n') + '\n');
 }
 
 module.exports = { render };

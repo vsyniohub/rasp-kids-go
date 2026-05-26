@@ -19,10 +19,11 @@ async function playGame(pet) {
   let message = pet.age === 0
     ? `${pet.name} has just hatched! Welcome home!`
     : `${pet.name} is happy to see you!`;
+  let frame = 0;
 
   while (true) {
     pet.tick();
-    render(pet, message);
+    render(pet, message, false, frame++);
     message = '';
 
     if (!pet.isAlive) {
